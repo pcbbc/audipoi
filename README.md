@@ -24,7 +24,7 @@ Currently the app will group cameras into categories, separated by speed:-
 * Specs - Average Speed cameras
 * RedLight - Traffic Light cameras (some of which double up as speed cameras)
 
-Latest version - v1.0.1.0 https://github.com/pcbbc/audipoi/tree/master/Releases/SpeedCameraToPoi_v1.0.1.0.zip
+Latest version - [v1.0.1.0](https://github.com/pcbbc/audipoi/raw/master/Releases/SpeedCameraToPoi_v1.0.1.0.zip)
 
 To install unpack the contents of the zip file into a folder of your choice and run SpeedCameraToPoi.exe
 
@@ -45,6 +45,6 @@ Currently the app will group caches by type, the following types will be created
 
 Optionally users can decide to exclude their own caches or found caches.
 
-Latest version - v1.0.1.0 https://github.com/pcbbc/audipoi/tree/master/Releases/GeocacheToPoi_v1.0.1.0.zip
+Latest version - [v1.0.1.0](https://github.com/pcbbc/audipoi/raw/master/Releases/GeocacheToPoi_v1.0.1.0.zip)
 
 if you have features you'd like to see send me a mail

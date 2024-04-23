@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "cfd0425c-cbcc-45c5-9009-b5d025826fe2": {
+      "ProjectGuid": "cfd0425c-cbcc-45c5-9009-b5d025826fe2",
+      "DisplayName": "AudiPoiDatabase",
+      "ColorIndex": 0
+    },
+    "8317b549-6985-41ee-b06c-81f90e351960": {
+      "ProjectGuid": "8317b549-6985-41ee-b06c-81f90e351960",
+      "DisplayName": "PocketGpsWorld",
+      "ColorIndex": 1
+    },
+    "a0bb16b4-79b3-4232-9d06-e56301394325": {
+      "ProjectGuid": "a0bb16b4-79b3-4232-9d06-e56301394325",
+      "DisplayName": "GeocacheToPoi",
+      "ColorIndex": 2
+    }
+  },
+  "NextColorIndex": 3
+}

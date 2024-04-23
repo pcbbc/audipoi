@@ -22,6 +22,7 @@
                 <TextBox x:Name="usernameTextBox" Height="23" Margin="10,0,221,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Column="1"/>
                 <Label x:Name="passwordBoxLabel" Content="Password:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="22,28,0,0" Height="26" Width="68" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
                 <PasswordBox x:Name="passwordBox" Margin="10,0,221,0" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" Height="23"/>
+                <Button x:Name="importButton" Grid.Column="1" Content="Import ZIP" HorizontalAlignment="Left" Margin="256,0,0,0" VerticalAlignment="Center" Height="26" Width="93" Click="importButton_Click"/>
             </Grid>
 
         </GroupBox>

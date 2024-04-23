@@ -49,5 +49,10 @@ namespace PocketGpsWorld
         /// Gets or sets a value indicating whether to include Red light cameras in the export
         /// </summary>
         public bool IncludeRedLight { get; set; }
+
+        /// <summary>
+        /// A import zip of cameras to override the PGPSW download
+        /// </summary>
+        public byte[] ImportedZip { get; set; }
     }
 }

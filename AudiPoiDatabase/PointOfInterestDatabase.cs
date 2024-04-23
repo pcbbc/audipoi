@@ -65,8 +65,11 @@ namespace Mcaddy.AudiPoiDatabase
         /// <returns>The number of POIs saved to the Drive</returns>
         public static int SavePois(Collection<PointOfInterestCategory> pointsOfInterest, string targetDrive, BackgroundWorker backgroundWorker)
         {
+            Collection<PointOfInterestCategory> categories = new Collection<PointOfInterestCategory>();
+            categories.AddRange(pointsOfInterest);
+
             int loadedWaypoints = 0;
-            PointOfInterestDatabase.BuildStaticContent(targetDrive, pointsOfInterest);
+            PointOfInterestDatabase.BuildStaticContent(targetDrive, categories);
 
             string databaseLocation = PointOfInterestDatabase.BuildEmptyDatabase(targetDrive);
 
@@ -121,7 +124,8 @@ namespace Mcaddy.AudiPoiDatabase
         /// <param name="pointsOfInterest">Points of interest to load</param>
         /// <param name="backgroundWorker">instance of a background worker to update, null if not required</param>
         /// <returns>then number of caches loaded</returns>
-        public static int Populate(string databaseLocation,  Collection<PointOfInterestCategory> pointsOfInterest, BackgroundWorker backgroundWorker)
+        public static int Populate(string databaseLocation,  Collection<PointOfInterestCategory> pointsOfInterest,
+            BackgroundWorker backgroundWorker)
         {
             if (pointsOfInterest == null)
             {

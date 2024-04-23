@@ -33,7 +33,9 @@ namespace PocketGpsWorld
         /// <exception cref="WebException">Thrown if unable to login, browse to or download the file</exception>
         public static byte[] Load(string username, string password)
         {
-            string loginAddress = "http://www.pocketgpsworld.com/modules.php?name=Your_Account";
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+            string loginAddress = "https://www.pocketgpsworld.com/modules.php?name=Your_Account";
 
             var client = new CookieAwareWebClient();
             client.Encoding = Encoding.UTF8;
@@ -55,19 +57,19 @@ namespace PocketGpsWorld
 
             // Check to see the download link exisits, failing this check is the first indicator 
             // that someting has changed on the PocketGpsWorld website
-            if (!loggedInPage.Contains("<a href=\"/modules.php?name=Cameras\" class=\"sidemenu\">Download Speed Cams</a>"))
+            if (!loggedInPage.Contains("<a href=\"/modules.php?name=Cameras#compat\" class=\"sidemenu\">Installation Guides</a>"))
             {
                 throw new WebException("Unable to find download link at PocketGPSworld.com, Please report error 1000 to developer");
             }
 
-            string downloadAddress = "http://www.pocketgpsworld.com/modules.php?name=Cameras";
+            string downloadAddress = "https://www.pocketgpsworld.com/modules.php?name=Cameras";
             NameValueCollection postData = new NameValueCollection
             {
               { "op", "DownloadPackage" },
               { "idPackage", "14" },
               { "getPmob", "yes" },
               { "getFrance", "no" },
-              { "getSwiss", "no" }
+              { "getSwiss", "no" },
             };
 
             // Download is preped as a temp file which the browser would normally be redirected to, need to extract the path and download that file.
@@ -76,7 +78,8 @@ namespace PocketGpsWorld
             Match match = metaRefreshRegex.Match(html);
             if (match.Success)
             {
-                return client.DownloadData(match.Groups[1].Value);
+                byte[] data = client.DownloadData(match.Groups[1].Value);
+                return data;
             }
             else
             {
@@ -150,11 +153,11 @@ namespace PocketGpsWorld
 
             foreach (PointOfInterestCategory category in poiCollection)
             {
-                if ((category.Name.Equals(CameraCategory.Fixed.ToDescriptionString()) && settings.IncludeStatic) ||
-                (category.Name.Equals(CameraCategory.Mobile.ToDescriptionString()) && settings.IncludeMobile) ||
-                (category.Name.Equals(CameraCategory.Specs.ToDescriptionString()) && settings.IncludeSpecs) ||
-                (category.Name.Equals(CameraCategory.PMobile.ToDescriptionString()) && settings.IncludeUnverified) ||
-                (category.Name.Equals(CameraCategory.RedLight.ToDescriptionString()) && settings.IncludeRedLight))
+                if ((category.Name.StartsWith(CameraCategory.Fixed.ToDescriptionString()) && settings.IncludeStatic) ||
+                (category.Name.StartsWith(CameraCategory.Mobile.ToDescriptionString()) && settings.IncludeMobile) ||
+                (category.Name.StartsWith(CameraCategory.Specs.ToDescriptionString()) && settings.IncludeSpecs) ||
+                (category.Name.StartsWith(CameraCategory.PMobile.ToDescriptionString()) && settings.IncludeUnverified) ||
+                (category.Name.StartsWith(CameraCategory.RedLight.ToDescriptionString()) && settings.IncludeRedLight))
                 {
                     filteredList.Add(category);
                 }
@@ -183,6 +186,9 @@ namespace PocketGpsWorld
                     throw new ArgumentException(string.Format("Unknown camera Type - {0}", camera.Name));
                 }
 
+                int iCameraSpeed = IdentifyCameraSpeed(camera.Name);
+
+
                 // Identify the correct Category
                 CameraCategory cameraCategory = IdentifyCameraCategory(cameraType);
                 if (cameraCategory == CameraCategory.None)
@@ -199,11 +205,35 @@ namespace PocketGpsWorld
                     }
                 }
 
+                if (cameraCategory == CameraCategory.Specs)
+				{
+                    //Maximum 10 catagories - combine Specs and Fixed cameras
+                    cameraCategory = CameraCategory.Fixed;
+				}
+                else if (cameraCategory == CameraCategory.RedLight)
+				{
+                    if (iCameraSpeed > 0)
+					{
+                        //Maximum 10 catagories - combine Red Light Speed and Fixed cameras
+                        cameraCategory = CameraCategory.Fixed;
+					}
+				}
+                else if (cameraCategory == CameraCategory.PMobile)
+				{
+                    cameraCategory = CameraCategory.Mobile;
+				}
+
+                string sDesc = cameraCategory.ToDescriptionString();
+                if (iCameraSpeed > 0)
+                {
+                    sDesc += $" {iCameraSpeed}";
+                }
+
                 // Add to relevant category
                 PointOfInterestCategory targetCategory = null;
                 foreach (PointOfInterestCategory pointOfInterestCategory in categorisedCameras)
                 {
-                    if (pointOfInterestCategory.Name.Equals(cameraCategory.ToDescriptionString()))
+                    if (pointOfInterestCategory.Name.Equals(sDesc))
                     {
                         targetCategory = pointOfInterestCategory;
                         break;
@@ -212,7 +242,7 @@ namespace PocketGpsWorld
 
                 if (targetCategory == null)
                 {
-                    targetCategory = new PointOfInterestCategory((int)cameraCategory, cameraCategory.ToDescriptionString(), LookupIcon(cameraCategory));
+                    targetCategory = new PointOfInterestCategory((int)cameraCategory, sDesc, GenerateIcon(cameraCategory, iCameraSpeed));
                     categorisedCameras.Add(targetCategory);
                 }
 
@@ -241,6 +271,26 @@ namespace PocketGpsWorld
             }
 
             return detectedCameraType;
+        }
+
+        /// <summary>
+        /// Attempt to get the Camera Speed
+        /// </summary>
+        /// <param name="name">the name value from the camera</param>
+        /// <returns>the camera speed</returns>
+        private static int IdentifyCameraSpeed(string name)
+        {
+            int iSpeed = 0;
+            int iPos = name.LastIndexOf('@');
+            if (iPos >= 0)
+			{
+                int iValue;
+                if (int.TryParse(name.Substring(iPos + 1), out iValue))
+				{
+                    iSpeed = iValue;
+				}
+			}
+            return iSpeed;
         }
 
         /// <summary>
@@ -308,5 +358,32 @@ namespace PocketGpsWorld
 
             return icon;
         }
+
+        private static Bitmap GenerateIcon(CameraCategory cameraCategory, int speed)
+		{
+            IconBuilder builder = new IconBuilder();
+            switch (cameraCategory)
+			{
+                case CameraCategory.Fixed:
+                    builder.TypeOfCamera = IconCameraType.Speed;
+                    break;
+                case CameraCategory.Mobile:
+                    builder.TypeOfCamera = IconCameraType.Mobile;
+                    break;
+                case CameraCategory.PMobile:
+                    builder.TypeOfCamera = IconCameraType.PMobile;
+                    break;
+                case CameraCategory.Specs:
+                    builder.TypeOfCamera = IconCameraType.Average;
+                    break;
+                case CameraCategory.RedLight:
+                    builder.TypeOfCamera = IconCameraType.RedLight;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            builder.Speed = speed;
+            return builder.GenerateIcon();
+		}
     }
 }

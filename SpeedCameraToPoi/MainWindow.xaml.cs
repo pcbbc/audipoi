@@ -29,6 +29,11 @@ namespace SpeedCameraToPoi
         private BackgroundWorker buildDatabaseBackgroundWorker;
 
         /// <summary>
+        /// A pre-downloaded zip file to process
+        /// </summary>
+        private byte[] importedZip;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class
         /// </summary>
         public MainWindow()
@@ -74,16 +79,19 @@ namespace SpeedCameraToPoi
         {
             if (!this.buildDatabaseBackgroundWorker.IsBusy)
             {
-                if (string.IsNullOrEmpty(this.usernameTextBox.Text))
+                if (this.importedZip == null)
                 {
-                    MessageBox.Show(Properties.Resources.UsernameError, Properties.Resources.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-                    return;
-                }
+                    if (string.IsNullOrEmpty(this.usernameTextBox.Text))
+                    {
+                        MessageBox.Show(Properties.Resources.UsernameError, Properties.Resources.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        return;
+                    }
 
-                if (string.IsNullOrEmpty(this.passwordBox.Password))
-                {
-                    MessageBox.Show(Properties.Resources.PasswordError, Properties.Resources.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-                    return;
+                    if (string.IsNullOrEmpty(this.passwordBox.Password))
+                    {
+                        MessageBox.Show(Properties.Resources.PasswordError, Properties.Resources.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        return;
+                    }
                 }
 
                 if (this.targetDriveComboBox.SelectedValue == null)
@@ -99,6 +107,7 @@ namespace SpeedCameraToPoi
                 {
                     Username = this.usernameTextBox.Text,
                     Password = this.passwordBox.Password,
+                    ImportedZip = this.importedZip,
                     TargertDrive = this.targetDriveComboBox.SelectedValue.ToString(),
                     IncludeUnverified = this.yesRadioButton.IsChecked.HasValue && (bool)this.yesRadioButton.IsChecked,
                     IncludeStatic = this.fixedCheckBox.IsChecked.HasValue && (bool)this.fixedCheckBox.IsChecked,
@@ -109,6 +118,32 @@ namespace SpeedCameraToPoi
 
                 this.buildDatabaseBackgroundWorker.RunWorkerAsync(settings);
             }
+        }
+
+        /// <summary>
+        /// Handle the import button click
+        /// </summary>
+        /// <param name="sender">the Sender object</param>
+        /// <param name="e">The Event Args</param>
+        private void importButton_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog fileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                DefaultExt = ".zip",
+                Filter = "Zip Files|*.zip"
+            };
+
+            bool? dialogResult = fileDialog.ShowDialog();
+            if (dialogResult == true)
+            {
+                string filename = fileDialog.FileName;
+                importedZip = File.ReadAllBytes(filename);
+            }
+            else
+			{
+                importedZip = null;
+			}
+
         }
 
         /// <summary>
@@ -128,7 +163,7 @@ namespace SpeedCameraToPoi
                 Collection<PointOfInterestCategory> cameras;
                 try
                 {
-                    byte[] camerasZip = SpeedCameras.Load(settings.Username, settings.Password);
+                    byte[] camerasZip = settings.ImportedZip ?? SpeedCameras.Load(settings.Username, settings.Password);
                     cameras = SpeedCameras.Filter(SpeedCameras.SortCameras(SpeedCameras.UnpackCameras(camerasZip)), settings);
                 }
                 catch (WebException webException)
@@ -256,5 +291,5 @@ namespace SpeedCameraToPoi
         {
             SaveSettings();
         }
-    }
+	}
 }

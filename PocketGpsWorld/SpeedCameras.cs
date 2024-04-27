@@ -7,6 +7,7 @@
 namespace PocketGpsWorld
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Collections.Specialized;
@@ -153,11 +154,16 @@ namespace PocketGpsWorld
 
             foreach (PointOfInterestCategory category in poiCollection)
             {
-                if ((category.Name.StartsWith(CameraCategory.Fixed.ToDescriptionString()) && settings.IncludeStatic) ||
-                (category.Name.StartsWith(CameraCategory.Mobile.ToDescriptionString()) && settings.IncludeMobile) ||
-                (category.Name.StartsWith(CameraCategory.Specs.ToDescriptionString()) && settings.IncludeSpecs) ||
-                (category.Name.StartsWith(CameraCategory.PMobile.ToDescriptionString()) && settings.IncludeUnverified) ||
-                (category.Name.StartsWith(CameraCategory.RedLight.ToDescriptionString()) && settings.IncludeRedLight))
+                string name = category.Name;
+                if (name.StartsWith("ALL "))
+				{
+                    name = name.Substring(4);
+				}
+                if ((name.StartsWith(CameraCategory.Fixed.ToDescriptionString()) && settings.IncludeStatic) ||
+                (name.StartsWith(CameraCategory.Mobile.ToDescriptionString()) && settings.IncludeMobile) ||
+                (name.StartsWith(CameraCategory.Specs.ToDescriptionString()) && settings.IncludeSpecs) ||
+                (name.StartsWith(CameraCategory.PMobile.ToDescriptionString()) && settings.IncludeUnverified) ||
+                (name.StartsWith(CameraCategory.RedLight.ToDescriptionString()) && settings.IncludeRedLight))
                 {
                     filteredList.Add(category);
                 }
@@ -205,47 +211,29 @@ namespace PocketGpsWorld
                     }
                 }
 
-                if (cameraCategory == CameraCategory.Specs)
-				{
-                    //Maximum 10 catagories - combine Specs and Fixed cameras
-                    cameraCategory = CameraCategory.Fixed;
-				}
-                else if (cameraCategory == CameraCategory.RedLight)
-				{
-                    if (iCameraSpeed > 0)
-					{
-                        //Maximum 10 catagories - combine Red Light Speed and Fixed cameras
-                        cameraCategory = CameraCategory.Fixed;
-					}
-				}
-                else if (cameraCategory == CameraCategory.PMobile)
-				{
-                    cameraCategory = CameraCategory.Mobile;
-				}
-
-                string sDesc = cameraCategory.ToDescriptionString();
+                string sAlertDesc = "ALL " +cameraCategory.ToDescriptionString();
+                string sIconDesc = cameraCategory.ToDescriptionString();
                 if (iCameraSpeed > 0)
                 {
-                    sDesc += $" {iCameraSpeed}";
+                    sIconDesc += $" {iCameraSpeed}";
                 }
 
-                // Add to relevant category
-                PointOfInterestCategory targetCategory = null;
-                foreach (PointOfInterestCategory pointOfInterestCategory in categorisedCameras)
-                {
-                    if (pointOfInterestCategory.Name.Equals(sDesc))
-                    {
-                        targetCategory = pointOfInterestCategory;
-                        break;
-                    }
-                }
-
+                // Add to relevant alert category
+                PointOfInterestCategory targetCategory = categorisedCameras.FirstOrDefault(c => c.Name.Equals(sAlertDesc));
                 if (targetCategory == null)
                 {
-                    targetCategory = new PointOfInterestCategory((int)cameraCategory, sDesc, GenerateIcon(cameraCategory, iCameraSpeed));
+                    targetCategory = new PointOfInterestCategory((int)cameraCategory, sAlertDesc, GenerateIcon(cameraCategory, -2));
                     categorisedCameras.Add(targetCategory);
                 }
+                targetCategory.Items.Add(camera);
 
+                // Add to relevant icon category
+                targetCategory = categorisedCameras.FirstOrDefault(c => c.Name.Equals(sIconDesc));
+                if (targetCategory == null)
+                {
+                    targetCategory = new PointOfInterestCategory((int)cameraCategory, sIconDesc, GenerateIcon(cameraCategory, iCameraSpeed));
+                    categorisedCameras.Add(targetCategory);
+                }
                 targetCategory.Items.Add(camera);
             }
 
@@ -277,10 +265,11 @@ namespace PocketGpsWorld
         /// Attempt to get the Camera Speed
         /// </summary>
         /// <param name="name">the name value from the camera</param>
-        /// <returns>the camera speed</returns>
+        /// <returns>the camera speed, or -1 for Variable</returns>
         private static int IdentifyCameraSpeed(string name)
         {
-            int iSpeed = 0;
+            // IconBuilder will display ? for Unknown
+            int iSpeed = -2;
             int iPos = name.LastIndexOf('@');
             if (iPos >= 0)
 			{
@@ -288,6 +277,12 @@ namespace PocketGpsWorld
                 if (int.TryParse(name.Substring(iPos + 1), out iValue))
 				{
                     iSpeed = iValue;
+                    // Speed 0 in PGPSW CSV = Variable
+                    if (iSpeed == 0)
+                    {
+                        // IconBuilder will display V for Variable
+                        iSpeed = -1;
+					}
 				}
 			}
             return iSpeed;

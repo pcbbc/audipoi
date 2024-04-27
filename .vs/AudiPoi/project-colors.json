@@ -15,7 +15,17 @@
       "ProjectGuid": "a0bb16b4-79b3-4232-9d06-e56301394325",
       "DisplayName": "GeocacheToPoi",
       "ColorIndex": 2
+    },
+    "f76d366b-0b0e-46cf-b58e-b8747d7ddd4d": {
+      "ProjectGuid": "f76d366b-0b0e-46cf-b58e-b8747d7ddd4d",
+      "DisplayName": "SpeedCameraToPoi",
+      "ColorIndex": 3
+    },
+    "34069ed0-63d0-47f7-a1ec-f9b621508629": {
+      "ProjectGuid": "34069ed0-63d0-47f7-a1ec-f9b621508629",
+      "DisplayName": "Shared",
+      "ColorIndex": 4
     }
   },
-  "NextColorIndex": 3
+  "NextColorIndex": 5
 }

@@ -6,12 +6,17 @@ Currently that seems to be broken because it is uploading your PGPSW zip files t
 
 This version was forked from the original 0.9 version and doesn't include that upload.  It may be missing other fixes and features also - Sorry.
 
-I've also modified it to produce more attractive icons with speed limits.
-Unfortunately this currently results in too many categories being generated, as my MIB2 system has a maximum of 10 arrival alerts that can be set.
-Not an issue for me as I never have alerts set for Mobile cameras, and you can have as many categories displayed as you want on map contents.
+It's been modified it to produce more attractive icons with speed limits.
 
-On my To Do list is to provide separate combine categories for Fixed, Mobile, Specs and RedLight (to be used for alerts) as well as the new categories (to be used for map icons).
-I think that should work.
+Version 1.0.2.0 also adds...
+
+* separate categories for arrival alerts by type, combined for all speeds (category names prefixed with "ALL...")
+* individual categories for the map contents display, separated by type and speed
+
+This is in order to get around the maximum of 10 alert categories, while still providing speed specific icons for the map.
+
+Select only the "ALL..." categories in the Arrival Alerts menu.
+Select from the remaining speed separated categories in the Map Contents menu.
 
 ## SpeedCameraToPoi
 
@@ -24,7 +29,7 @@ Currently the app will group cameras into categories, separated by speed:-
 * Specs - Average Speed cameras
 * RedLight - Traffic Light cameras (some of which double up as speed cameras)
 
-Latest version - [v1.0.1.0](https://github.com/pcbbc/audipoi/raw/master/Releases/SpeedCameraToPoi_v1.0.1.0.zip)
+Latest version - [v1.0.2.0](https://github.com/pcbbc/audipoi/raw/master/Releases/SpeedCameraToPoi_v1.0.2.0.zip)
 
 To install unpack the contents of the zip file into a folder of your choice and run SpeedCameraToPoi.exe
 
@@ -45,6 +50,6 @@ Currently the app will group caches by type, the following types will be created
 
 Optionally users can decide to exclude their own caches or found caches.
 
-Latest version - [v1.0.1.0](https://github.com/pcbbc/audipoi/raw/master/Releases/GeocacheToPoi_v1.0.1.0.zip)
+Latest version - [v1.0.2.0](https://github.com/pcbbc/audipoi/raw/master/Releases/GeocacheToPoi_v1.0.2.0.zip)
 
 if you have features you'd like to see send me a mail
